@@ -4,6 +4,9 @@ import mmcv
 import numpy as np
 import pycocotools.mask as maskUtils
 
+import zipfile
+import cv2
+
 from ..registry import PIPELINES
 
 
@@ -40,6 +43,45 @@ class LoadImageFromFile(object):
     def __repr__(self):
         return '{} (to_float32={}, color_type={})'.format(
             self.__class__.__name__, self.to_float32, self.color_type)
+
+@PIPELINES.register_module
+class LoadImageFromZip(object):
+
+    def __init__(self, fname, to_float32=False, color_type='color'):
+        self.to_float32 = to_float32
+        self.color_type = color_type
+        self.z = zipfile.ZipFile(fname, 'r')
+
+    def __call__(self, results):
+        if results['img_prefix'] is not None:
+            filename = results['img_prefix'] + results['img_info']['filename']
+        else:
+            filename = results['img_info']['filename']
+
+        #img = mmcv.imread(filename, self.color_type)
+        data = self.z.read(filename)
+        img = cv2.imdecode(np.frombuffer(data, np.uint8), 1)
+
+        if self.to_float32:
+            img = img.astype(np.float32)
+        results['filename'] = filename
+        results['img'] = img
+        results['img_shape'] = img.shape
+        results['ori_shape'] = img.shape
+        # Set initial values for default meta_keys
+        results['pad_shape'] = img.shape
+        results['scale_factor'] = 1.0
+        num_channels = 1 if len(img.shape) < 3 else img.shape[2]
+        results['img_norm_cfg'] = dict(
+            mean=np.zeros(num_channels, dtype=np.float32),
+            std=np.ones(num_channels, dtype=np.float32),
+            to_rgb=False)
+        return results
+
+    def __repr__(self):
+        return '{} (to_float32={}, color_type={})'.format(
+            self.__class__.__name__, self.to_float32, self.color_type)
+
 
 
 @PIPELINES.register_module
