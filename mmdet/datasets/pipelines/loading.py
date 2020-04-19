@@ -44,13 +44,27 @@ class LoadImageFromFile(object):
         return '{} (to_float32={}, color_type={})'.format(
             self.__class__.__name__, self.to_float32, self.color_type)
 
+class ZipReader(object):
+    def __init__(self, fname):
+        super(ZipReader, self).__init__()
+        self.id_context = dict()
+        self.fname = fname
+
+    def read(self, image_name):
+        if self.fname in self.id_context:
+            return self.id_context[self.fname].read(image_name)
+        else:
+            file_handle = zipfile.ZipFile(self.fname, 'r')
+            self.id_context[self.fname] = file_handle
+            return self.id_context[self.fname].read(image_name)
+
 @PIPELINES.register_module
 class LoadImageFromZip(object):
 
     def __init__(self, fname, to_float32=False, color_type='color'):
         self.to_float32 = to_float32
         self.color_type = color_type
-        self.z = zipfile.ZipFile(fname, 'r')
+        self.z = ZipReader(fname)
 
     def __call__(self, results):
         if results['img_prefix'] is not None:
