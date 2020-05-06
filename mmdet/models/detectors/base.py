@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 
 import mmcv
 import numpy as np
-import pycocotools.mask as maskUtils
+#import pycocotools.mask as maskUtils
 import torch.nn as nn
 
 from mmdet.core import auto_fp16, get_classes, tensor2imgs

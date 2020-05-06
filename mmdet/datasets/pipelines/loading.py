@@ -2,7 +2,7 @@ import os.path as osp
 
 import mmcv
 import numpy as np
-import pycocotools.mask as maskUtils
+#import pycocotools.mask as maskUtils
 
 import zipfile
 import cv2
