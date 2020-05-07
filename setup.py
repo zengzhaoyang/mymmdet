@@ -91,7 +91,8 @@ def make_cuda_ext(name, module, sources):
 
     define_macros = []
 
-    if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
+    #if torch.cuda.is_available() or os.getenv('FORCE_CUDA', '0') == '1':
+    if True:
         define_macros += [('WITH_CUDA', None)]
     else:
         raise EnvironmentError('CUDA is required to compile MMDetection!')
